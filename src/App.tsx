@@ -765,7 +765,19 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
   };
 
   const removeExperience = (id: string) => {
+    const itemToRemove = data.experience.find(e => e.id === id);
+    if (!itemToRemove) return;
+    
     onChange({ ...data, experience: data.experience.filter(e => e.id !== id) });
+    
+    toast.success('Experience removed', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          onChange({ ...data, experience: [...data.experience, itemToRemove] });
+        }
+      }
+    });
   };
 
   const updateExperience = (id: string, field: keyof Experience, val: string) => {
@@ -783,7 +795,19 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
   };
 
   const removeEducation = (id: string) => {
+    const itemToRemove = data.education.find(e => e.id === id);
+    if (!itemToRemove) return;
+
     onChange({ ...data, education: data.education.filter(e => e.id !== id) });
+
+    toast.success('Education removed', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          onChange({ ...data, education: [...data.education, itemToRemove] });
+        }
+      }
+    });
   };
 
   const updateEducation = (id: string, field: keyof Education, val: string) => {
@@ -844,7 +868,11 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
         <div className="space-y-4">
           {data.experience.map((exp) => (
             <div key={exp.id} className="p-4 border border-stone-100 rounded-xl space-y-4 relative group">
-              <button onClick={() => removeExperience(exp.id)} className="absolute top-2 right-2 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+              <button 
+                onClick={() => removeExperience(exp.id)} 
+                className="absolute top-2 right-2 p-2 text-stone-300 hover:text-red-500 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                title="Remove Experience"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
               <div className="grid grid-cols-2 gap-4">
@@ -872,14 +900,18 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
         <div className="space-y-4">
           {data.education.map((edu) => (
             <div key={edu.id} className="p-4 border border-stone-100 rounded-xl space-y-4 relative group">
-              <button onClick={() => removeEducation(edu.id)} className="absolute top-2 right-2 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+              <button 
+                onClick={() => removeEducation(edu.id)} 
+                className="absolute top-2 right-2 p-2 text-stone-300 hover:text-red-500 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                title="Remove Education"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="School" value={edu.school} onChange={(v) => updateEducation(edu.id, 'school', v)} />
-                <Input label="Degree" value={edu.degree} onChange={(v) => updateEducation(edu.id, 'degree', v)} />
-                <Input label="Start Date" value={edu.startDate} onChange={(v) => updateEducation(edu.id, 'startDate', v)} />
-                <Input label="End Date" value={edu.endDate} onChange={(v) => updateEducation(edu.id, 'endDate', v)} />
+                <Input label="School / Institution" value={edu.school} onChange={(v) => updateEducation(edu.id, 'school', v)} placeholder="e.g., University of Technology" />
+                <Input label="Degree / Qualification" value={edu.degree} onChange={(v) => updateEducation(edu.id, 'degree', v)} placeholder="e.g., BSc, High School, or Self-Taught" />
+                <Input label="Start Date" value={edu.startDate} onChange={(v) => updateEducation(edu.id, 'startDate', v)} placeholder="MM/YYYY" />
+                <Input label="End Date" value={edu.endDate} onChange={(v) => updateEducation(edu.id, 'endDate', v)} placeholder="MM/YYYY or Present" />
               </div>
             </div>
           ))}
@@ -1014,10 +1046,10 @@ function CVPreview({ data }: { data: CVData }) {
                 {education.map((edu) => (
                   <div key={edu.id} className="space-y-1">
                     <div className="flex justify-between items-baseline">
-                      <h3 className="font-bold">{edu.degree}</h3>
+                      <h3 className="font-bold">{edu.degree || edu.school}</h3>
                       <span className="text-xs font-mono text-stone-400">{edu.startDate} — {edu.endDate}</span>
                     </div>
-                    <p className="text-sm text-stone-600">{edu.school}</p>
+                    {edu.degree && <p className="text-sm text-stone-600">{edu.school}</p>}
                   </div>
                 ))}
               </div>
@@ -1129,10 +1161,10 @@ function CVPreview({ data }: { data: CVData }) {
               {education.map((edu) => (
                 <div key={edu.id} className="space-y-1">
                   <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold">{edu.degree}</h3>
+                    <h3 className="font-bold">{edu.degree || edu.school}</h3>
                     <span className="text-xs font-mono text-stone-400">{edu.startDate} — {edu.endDate}</span>
                   </div>
-                  <p className="text-sm text-stone-500">{edu.school}</p>
+                  {edu.degree && <p className="text-sm text-stone-500">{edu.school}</p>}
                 </div>
               ))}
             </div>
@@ -1189,8 +1221,8 @@ function CVPreview({ data }: { data: CVData }) {
                   {edu.startDate} — {edu.endDate}
                 </div>
                 <div className="col-span-3">
-                  <h3 className="font-bold">{edu.degree}</h3>
-                  <p className="text-sm text-stone-500">{edu.school}</p>
+                  <h3 className="font-bold">{edu.degree || edu.school}</h3>
+                  {edu.degree && <p className="text-sm text-stone-500">{edu.school}</p>}
                 </div>
               </div>
             ))}
