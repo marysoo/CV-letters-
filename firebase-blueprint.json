@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Basic user information and settings.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "CV": {
+      "title": "Curriculum Vitae",
+      "description": "Full CV data including experience, education, and skills.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "personalInfo": {
+          "type": "object",
+          "properties": {
+            "fullName": { "type": "string" },
+            "jobTitle": { "type": "string" },
+            "email": { "type": "string" },
+            "phone": { "type": "string" },
+            "location": { "type": "string" },
+            "summary": { "type": "string" }
+          }
+        },
+        "experience": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "company": { "type": "string" },
+              "position": { "type": "string" },
+              "startDate": { "type": "string" },
+              "endDate": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "education": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "school": { "type": "string" },
+              "degree": { "type": "string" },
+              "startDate": { "type": "string" },
+              "endDate": { "type": "string" }
+            }
+          }
+        },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "certifications": { "type": "array", "items": { "type": "string" } },
+        "template": { "type": "string", "enum": ["minimal", "professional", "modern"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid"]
+    },
+    "CoverLetter": {
+      "title": "Cover Letter",
+      "description": "Cover letter details.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "companyName": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "body": { "type": "string" },
+        "tone": { "type": "string", "enum": ["formal", "enthusiastic", "concise"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid"]
+    },
+    "ApplicationLetter": {
+      "title": "Application Letter",
+      "description": "Formal job application letter details.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "companyName": { "type": "string" },
+        "companyAddress": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "jobRef": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "purpose": { "type": "string", "enum": ["job application", "speculative application", "follow-up"] },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document."
+    },
+    "/users/{userId}/data/cv": {
+      "schema": "CV",
+      "description": "User's current CV data."
+    },
+    "/users/{userId}/data/coverLetter": {
+      "schema": "CoverLetter",
+      "description": "User's current cover letter data."
+    },
+    "/users/{userId}/data/applicationLetter": {
+      "schema": "ApplicationLetter",
+      "description": "User's current application letter data."
+    }
+  }
+}
