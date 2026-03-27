@@ -58,6 +58,15 @@
         "languages": { "type": "array", "items": { "type": "string" } },
         "certifications": { "type": "array", "items": { "type": "string" } },
         "template": { "type": "string", "enum": ["minimal", "professional", "modern"] },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "primaryColor": { "type": "string" },
+            "fontFamily": { "type": "string", "enum": ["sans", "serif", "mono"] },
+            "fontSize": { "type": "string", "enum": ["small", "medium", "large"] },
+            "spacing": { "type": "string", "enum": ["compact", "normal", "relaxed"] }
+          }
+        },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid"]

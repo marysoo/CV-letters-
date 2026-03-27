@@ -21,7 +21,10 @@ import {
   LogOut,
   LogIn,
   ChevronDown,
-  Eye
+  Eye,
+  Palette,
+  Maximize2,
+  Settings2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db, signInWithGoogle, logout } from './firebase';
@@ -66,6 +69,12 @@ interface CVData {
   languages: string[];
   certifications: string[];
   template: 'minimal' | 'professional' | 'modern';
+  settings: {
+    primaryColor: string;
+    fontFamily: 'sans' | 'serif' | 'mono';
+    fontSize: 'small' | 'medium' | 'large';
+    spacing: 'compact' | 'normal' | 'relaxed';
+  };
 }
 
 interface CoverLetterData {
@@ -104,6 +113,12 @@ const INITIAL_CV: CVData = {
   languages: [],
   certifications: [],
   template: 'professional',
+  settings: {
+    primaryColor: '#1c1917', // stone-900
+    fontFamily: 'sans',
+    fontSize: 'medium',
+    spacing: 'normal',
+  },
 };
 
 const INITIAL_COVER_LETTER: CoverLetterData = {
@@ -165,7 +180,35 @@ const SAMPLE_CV: CVData = {
   languages: ['English (Native)', 'Spanish (Conversational)'],
   certifications: ['AWS Certified Solutions Architect', 'Google Cloud Professional Developer'],
   template: 'modern',
+  settings: {
+    primaryColor: '#1c1917',
+    fontFamily: 'sans',
+    fontSize: 'medium',
+    spacing: 'normal',
+  },
 };
+
+const COLOR_PALETTES = [
+  { name: 'Stone', value: '#1c1917' },
+  { name: 'Slate', value: '#0f172a' },
+  { name: 'Emerald', value: '#065f46' },
+  { name: 'Rose', value: '#9f1239' },
+  { name: 'Amber', value: '#92400e' },
+  { name: 'Indigo', value: '#3730a3' },
+  { name: 'Cyan', value: '#155e75' },
+];
+
+const FONT_FAMILIES = [
+  { name: 'Sans', value: 'sans' },
+  { name: 'Serif', value: 'serif' },
+  { name: 'Mono', value: 'mono' },
+];
+
+const SPACING_OPTIONS = [
+  { name: 'Compact', value: 'compact' },
+  { name: 'Normal', value: 'normal' },
+  { name: 'Relaxed', value: 'relaxed' },
+];
 
 // --- Error Handling ---
 
@@ -757,6 +800,10 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
     onChange({ ...data, personalInfo: { ...data.personalInfo, [field]: val } });
   };
 
+  const updateSettings = (field: keyof CVData['settings'], val: any) => {
+    onChange({ ...data, settings: { ...data.settings, [field]: val } });
+  };
+
   const addExperience = () => {
     onChange({
       ...data,
@@ -818,24 +865,97 @@ function CVEditor({ data, onChange }: { data: CVData, onChange: (d: CVData) => v
   };
 
   return (
-    <div className="space-y-8">
-      {/* Template Selection */}
-      <section className="space-y-4">
-        <label className="text-xs font-mono uppercase tracking-widest text-stone-400 flex items-center gap-2">
-          <Layout className="w-3 h-3" /> Template Style
-        </label>
-        <div className="relative">
-          <select 
-            value={data.template}
-            onChange={(e) => onChange({ ...data, template: e.target.value as any })}
-            className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/5 focus:border-stone-900 transition-all appearance-none cursor-pointer"
-          >
-            <option value="minimal">Minimalist Style</option>
-            <option value="professional">Professional Classic</option>
-            <option value="modern">Modern Sidebar</option>
-          </select>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-            <ChevronDown className="w-4 h-4" />
+    <div className="space-y-10">
+      {/* Design Customization */}
+      <section className="space-y-6 p-6 bg-stone-50 rounded-2xl border border-stone-100">
+        <div className="flex items-center gap-2 text-stone-900">
+          <Settings2 className="w-4 h-4" />
+          <h3 className="font-serif italic text-lg">Design & Style</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Template Selection */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-stone-400 flex items-center gap-2">
+              <Layout className="w-3 h-3" /> Template Style
+            </label>
+            <div className="relative">
+              <select 
+                value={data.template}
+                onChange={(e) => onChange({ ...data, template: e.target.value as any })}
+                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900/5 focus:border-stone-900 transition-all appearance-none cursor-pointer"
+              >
+                <option value="minimal">Minimalist Style</option>
+                <option value="professional">Professional Classic</option>
+                <option value="modern">Modern Sidebar</option>
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+
+          {/* Color Palette */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-stone-400 flex items-center gap-2">
+              <Palette className="w-3 h-3" /> Color Palette
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_PALETTES.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => updateSettings('primaryColor', p.value)}
+                  className={cn(
+                    "w-8 h-8 rounded-full border-2 transition-all",
+                    data.settings.primaryColor === p.value ? "border-stone-900 scale-110" : "border-transparent hover:scale-105"
+                  )}
+                  style={{ backgroundColor: p.value }}
+                  title={p.name}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Font Style */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-stone-400 flex items-center gap-2">
+              <Type className="w-3 h-3" /> Typography
+            </label>
+            <div className="flex gap-2">
+              {FONT_FAMILIES.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => updateSettings('fontFamily', f.value)}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-xl border text-xs capitalize transition-all",
+                    data.settings.fontFamily === f.value ? "bg-stone-900 text-stone-50 border-stone-900" : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                  )}
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Spacing */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-stone-400 flex items-center gap-2">
+              <Maximize2 className="w-3 h-3" /> Layout Spacing
+            </label>
+            <div className="flex gap-2">
+              {SPACING_OPTIONS.map((s) => (
+                <button
+                  key={s.value}
+                  onClick={() => updateSettings('spacing', s.value)}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-xl border text-xs capitalize transition-all",
+                    data.settings.spacing === s.value ? "bg-stone-900 text-stone-50 border-stone-900" : "bg-white text-stone-600 border-stone-200 hover:border-stone-400"
+                  )}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -1000,13 +1120,21 @@ function ApplicationLetterEditor({ data, onChange, personalInfo }: { data: Appli
 // --- Preview Components ---
 
 function CVPreview({ data }: { data: CVData }) {
-  const { personalInfo, experience, education, skills, languages, certifications, template } = data;
+  const { personalInfo, experience, education, skills, languages, certifications, template, settings = INITIAL_CV.settings } = data;
+
+  const fontClass = settings.fontFamily === 'serif' ? 'font-serif' : settings.fontFamily === 'mono' ? 'font-mono' : 'font-sans';
+  
+  const spacingClass = settings.spacing === 'compact' ? 'space-y-4' : settings.spacing === 'relaxed' ? 'space-y-12' : 'space-y-8';
+  const sectionSpacingClass = settings.spacing === 'compact' ? 'space-y-2' : settings.spacing === 'relaxed' ? 'space-y-6' : 'space-y-4';
 
   if (template === 'minimal') {
     return (
-      <div className="p-12 text-stone-800 space-y-8 bg-white w-[210mm] min-h-[297mm]">
-        <div className="border-b-2 border-stone-900 pb-6">
-          <h1 className="text-4xl font-bold uppercase tracking-tighter">{personalInfo.fullName || 'Your Name'}</h1>
+      <div 
+        className={cn("p-12 text-stone-800 bg-white w-[210mm] min-h-[297mm]", fontClass, spacingClass)}
+        style={{ '--primary': settings.primaryColor } as any}
+      >
+        <div className="border-b-2 pb-6" style={{ borderColor: settings.primaryColor }}>
+          <h1 className="text-4xl font-bold uppercase tracking-tighter" style={{ color: settings.primaryColor }}>{personalInfo.fullName || 'Your Name'}</h1>
           <p className="text-xl text-stone-500 mt-1">{personalInfo.jobTitle}</p>
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm font-mono text-stone-400">
             {personalInfo.email && <span>{personalInfo.email}</span>}
@@ -1024,13 +1152,13 @@ function CVPreview({ data }: { data: CVData }) {
 
         <div className="grid grid-cols-3 gap-12">
           <div className="col-span-2 space-y-8">
-            <section className="space-y-4">
+            <section className={sectionSpacingClass}>
               <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400">Experience</h2>
               <div className="space-y-6">
                 {experience.map((exp) => (
                   <div key={exp.id} className="space-y-1">
                     <div className="flex justify-between items-baseline">
-                      <h3 className="font-bold">{exp.position}</h3>
+                      <h3 className="font-bold" style={{ color: settings.primaryColor }}>{exp.position}</h3>
                       <span className="text-xs font-mono text-stone-400">{exp.startDate} — {exp.endDate}</span>
                     </div>
                     <p className="text-sm italic text-stone-600">{exp.company}</p>
@@ -1040,13 +1168,13 @@ function CVPreview({ data }: { data: CVData }) {
               </div>
             </section>
 
-            <section className="space-y-4">
+            <section className={sectionSpacingClass}>
               <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400">Education</h2>
               <div className="space-y-4">
                 {education.map((edu) => (
                   <div key={edu.id} className="space-y-1">
                     <div className="flex justify-between items-baseline">
-                      <h3 className="font-bold">{edu.degree || edu.school}</h3>
+                      <h3 className="font-bold" style={{ color: settings.primaryColor }}>{edu.degree || edu.school}</h3>
                       <span className="text-xs font-mono text-stone-400">{edu.startDate} — {edu.endDate}</span>
                     </div>
                     {edu.degree && <p className="text-sm text-stone-600">{edu.school}</p>}
@@ -1057,14 +1185,14 @@ function CVPreview({ data }: { data: CVData }) {
           </div>
 
           <div className="space-y-8">
-            <section className="space-y-4">
+            <section className={sectionSpacingClass}>
               <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {skills.map((s, i) => <span key={i} className="text-xs bg-stone-100 px-2 py-1 rounded">{s}</span>)}
               </div>
             </section>
             {languages.length > 0 && (
-              <section className="space-y-4">
+              <section className={sectionSpacingClass}>
                 <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400">Languages</h2>
                 <div className="space-y-1">
                   {languages.map((l, i) => <p key={i} className="text-sm">{l}</p>)}
@@ -1072,7 +1200,7 @@ function CVPreview({ data }: { data: CVData }) {
               </section>
             )}
             {certifications.length > 0 && (
-              <section className="space-y-4">
+              <section className={sectionSpacingClass}>
                 <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400">Certifications</h2>
                 <div className="space-y-1">
                   {certifications.map((c, i) => <p key={i} className="text-sm">{c}</p>)}
@@ -1087,17 +1215,17 @@ function CVPreview({ data }: { data: CVData }) {
 
   if (template === 'modern') {
     return (
-      <div className="flex w-[210mm] min-h-[297mm] bg-white">
+      <div className={cn("flex w-[210mm] min-h-[297mm] bg-white", fontClass)}>
         {/* Sidebar */}
-        <div className="w-1/3 bg-stone-900 text-stone-50 p-8 space-y-8">
+        <div className="w-1/3 text-stone-50 p-8 space-y-8" style={{ backgroundColor: settings.primaryColor }}>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold leading-tight">{personalInfo.fullName || 'Your Name'}</h1>
-            <p className="text-stone-400 font-medium">{personalInfo.jobTitle}</p>
+            <p className="text-stone-300 font-medium">{personalInfo.jobTitle}</p>
           </div>
 
           <section className="space-y-4">
-            <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Contact</h2>
-            <div className="space-y-2 text-sm text-stone-300">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400 opacity-60">Contact</h2>
+            <div className="space-y-2 text-sm text-stone-200">
               {personalInfo.email && <p className="flex items-center gap-2"><Mail className="w-3 h-3" /> {personalInfo.email}</p>}
               {personalInfo.phone && <p className="flex items-center gap-2"><User className="w-3 h-3" /> {personalInfo.phone}</p>}
               {personalInfo.location && <p className="flex items-center gap-2"><Layout className="w-3 h-3" /> {personalInfo.location}</p>}
@@ -1105,7 +1233,7 @@ function CVPreview({ data }: { data: CVData }) {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Skills</h2>
+            <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400 opacity-60">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {skills.map((s, i) => <span key={i} className="text-xs border border-stone-700 px-2 py-1 rounded">{s}</span>)}
             </div>
@@ -1113,8 +1241,8 @@ function CVPreview({ data }: { data: CVData }) {
 
           {languages.length > 0 && (
             <section className="space-y-4">
-              <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Languages</h2>
-              <div className="space-y-1 text-sm text-stone-300">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400 opacity-60">Languages</h2>
+              <div className="space-y-1 text-sm text-stone-200">
                 {languages.map((l, i) => <p key={i}>{l}</p>)}
               </div>
             </section>
@@ -1122,8 +1250,8 @@ function CVPreview({ data }: { data: CVData }) {
 
           {certifications.length > 0 && (
             <section className="space-y-4">
-              <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Certifications</h2>
-              <div className="space-y-1 text-sm text-stone-300">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-stone-400 opacity-60">Certifications</h2>
+              <div className="space-y-1 text-sm text-stone-200">
                 {certifications.map((c, i) => <p key={i}>{c}</p>)}
               </div>
             </section>
@@ -1131,16 +1259,16 @@ function CVPreview({ data }: { data: CVData }) {
         </div>
 
         {/* Main Content */}
-        <div className="w-2/3 p-12 text-stone-800 space-y-10">
+        <div className={cn("w-2/3 p-12 text-stone-800", spacingClass)}>
           {personalInfo.summary && (
             <section className="space-y-4">
-              <h2 className="text-xl font-serif italic border-b border-stone-100 pb-2">Professional Profile</h2>
+              <h2 className="text-xl font-serif italic border-b pb-2" style={{ borderColor: `${settings.primaryColor}20`, color: settings.primaryColor }}>Professional Profile</h2>
               <p className="leading-relaxed text-stone-600">{personalInfo.summary}</p>
             </section>
           )}
 
           <section className="space-y-6">
-            <h2 className="text-xl font-serif italic border-b border-stone-100 pb-2">Experience</h2>
+            <h2 className="text-xl font-serif italic border-b pb-2" style={{ borderColor: `${settings.primaryColor}20`, color: settings.primaryColor }}>Experience</h2>
             <div className="space-y-8">
               {experience.map((exp) => (
                 <div key={exp.id} className="space-y-2">
@@ -1156,7 +1284,7 @@ function CVPreview({ data }: { data: CVData }) {
           </section>
 
           <section className="space-y-6">
-            <h2 className="text-xl font-serif italic border-b border-stone-100 pb-2">Education</h2>
+            <h2 className="text-xl font-serif italic border-b pb-2" style={{ borderColor: `${settings.primaryColor}20`, color: settings.primaryColor }}>Education</h2>
             <div className="space-y-4">
               {education.map((edu) => (
                 <div key={edu.id} className="space-y-1">
@@ -1176,11 +1304,11 @@ function CVPreview({ data }: { data: CVData }) {
 
   // Default: Professional
   return (
-    <div className="p-16 text-stone-800 space-y-12 bg-white w-[210mm] min-h-[297mm]">
+    <div className={cn("p-16 text-stone-800 bg-white w-[210mm] min-h-[297mm]", fontClass, spacingClass)}>
       <div className="text-center space-y-4">
-        <h1 className="text-5xl font-serif italic tracking-tight">{personalInfo.fullName || 'Your Name'}</h1>
+        <h1 className="text-5xl font-serif italic tracking-tight" style={{ color: settings.primaryColor }}>{personalInfo.fullName || 'Your Name'}</h1>
         <p className="text-xl text-stone-500 font-light tracking-widest uppercase">{personalInfo.jobTitle}</p>
-        <div className="flex justify-center gap-6 text-sm text-stone-400 border-t border-b border-stone-100 py-3">
+        <div className="flex justify-center gap-6 text-sm text-stone-400 border-t border-b py-3" style={{ borderColor: `${settings.primaryColor}20` }}>
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -1195,7 +1323,7 @@ function CVPreview({ data }: { data: CVData }) {
 
       <div className="space-y-10">
         <section className="space-y-6">
-          <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 text-center border-b border-stone-100 pb-2">Experience</h2>
+          <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 text-center border-b pb-2" style={{ borderColor: `${settings.primaryColor}20` }}>Experience</h2>
           <div className="space-y-8">
             {experience.map((exp) => (
               <div key={exp.id} className="grid grid-cols-4 gap-8">
@@ -1203,7 +1331,7 @@ function CVPreview({ data }: { data: CVData }) {
                   {exp.startDate} — {exp.endDate}
                 </div>
                 <div className="col-span-3 space-y-2">
-                  <h3 className="text-lg font-bold">{exp.position}</h3>
+                  <h3 className="text-lg font-bold" style={{ color: settings.primaryColor }}>{exp.position}</h3>
                   <p className="text-stone-500 font-medium">{exp.company}</p>
                   <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">{exp.description}</p>
                 </div>
@@ -1213,7 +1341,7 @@ function CVPreview({ data }: { data: CVData }) {
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 text-center border-b border-stone-100 pb-2">Education</h2>
+          <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 text-center border-b pb-2" style={{ borderColor: `${settings.primaryColor}20` }}>Education</h2>
           <div className="space-y-6">
             {education.map((edu) => (
               <div key={edu.id} className="grid grid-cols-4 gap-8">
@@ -1221,7 +1349,7 @@ function CVPreview({ data }: { data: CVData }) {
                   {edu.startDate} — {edu.endDate}
                 </div>
                 <div className="col-span-3">
-                  <h3 className="font-bold">{edu.degree || edu.school}</h3>
+                  <h3 className="font-bold" style={{ color: settings.primaryColor }}>{edu.degree || edu.school}</h3>
                   {edu.degree && <p className="text-sm text-stone-500">{edu.school}</p>}
                 </div>
               </div>
@@ -1231,13 +1359,13 @@ function CVPreview({ data }: { data: CVData }) {
 
         <div className="grid grid-cols-2 gap-12">
           <section className="space-y-4">
-            <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 border-b border-stone-100 pb-2">Expertise</h2>
+            <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 border-b pb-2" style={{ borderColor: `${settings.primaryColor}20` }}>Expertise</h2>
             <div className="flex flex-wrap gap-2">
               {skills.map((s, i) => <span key={i} className="text-xs bg-stone-50 border border-stone-100 px-3 py-1 rounded-full">{s}</span>)}
             </div>
           </section>
           <section className="space-y-4">
-            <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 border-b border-stone-100 pb-2">Additional</h2>
+            <h2 className="text-sm font-mono uppercase tracking-[0.3em] text-stone-300 border-b pb-2" style={{ borderColor: `${settings.primaryColor}20` }}>Additional</h2>
             <div className="space-y-4">
               {languages.length > 0 && (
                 <div>
